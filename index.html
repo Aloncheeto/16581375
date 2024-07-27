@@ -31,14 +31,10 @@
 </body>
 
 <script>
-    var red = 0;
-    var green = 0;
-    var blue = 0;
+    let red = 0, green = 0, blue = 0;
+    const elementsPerFrame = 100;
 
-    var timeHandler;
-
-
-    var calcColor = function() {
+    const calcColor = function() {
         if (red < 255) {
             if (green < 255) {
                 if (blue < 255) {
@@ -52,21 +48,33 @@
                 red++;
             }
         } else {
-            clearInterval(timeHandler);
+            return false;
+        }
+        return true;
+    }
+
+    const drawRect = function() {
+        const fragment = document.createDocumentFragment();
+
+        for (let i = 0; i < elementsPerFrame; i++) {
+            if (!calcColor()) {
+                break;
+            }
+
+            const bit = document.createElement('div');
+            bit.classList.add('bit');
+            bit.style.backgroundColor = `rgb(${red}, ${green}, ${blue})`;
+            fragment.appendChild(bit);
+        }
+
+        document.body.appendChild(fragment);
+
+        if (red < 255) {
+            requestAnimationFrame(drawRect);
         }
     }
 
-    var drawRect = function() {
-        var bit = document.createElement('div');
-        bit.classList.add('bit');
-        bit.style.backgroundColor = 'rgb(' + red + ',' + green + ',' + blue + ')';
-        document.querySelector('body').appendChild(bit);
-    }
-
-    timeHandler = setInterval(function() {
-        calcColor();
-        drawRect();
-    }, 0.01);
+    requestAnimationFrame(drawRect);
 </script>
 
 </html>
