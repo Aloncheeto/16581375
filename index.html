@@ -12,42 +12,44 @@
             margin: 0;
             padding: 0;
         }
-        
+
         body {
-            width: 100vw;
-            height: 25600vw;
             display: block;
         }
-        
+
+        .container {
+            position: relative;
+            width: 100vw;
+            height: 100vh;
+            overflow: auto;
+        }
+
         .bit {
             width: calc(100vw / 256);
             height: calc(100vw / 256);
-            float: left;
+            position: absolute;
         }
     </style>
 </head>
 
 <body>
+    <div class="container"></div>
 </body>
 
 <script>
     const container = document.querySelector('.container');
-    const bitSize = 10;
+    const bitSize = window.innerWidth / 256; // bit size calculation based on 256 colors per row
     const totalElements = 256 * 256 * 256;
-    const elementsPerRow = Math.floor(window.innerWidth / bitSize);
+    const elementsPerRow = 256; // fixed number of elements per row
     const totalRows = Math.ceil(totalElements / elementsPerRow);
     const visibleRows = Math.ceil(window.innerHeight / bitSize);
     const bufferRows = 5;
     const totalVisibleRows = visibleRows + bufferRows * 2;
 
-    let red = 0, green = 0, blue = 0;
-    let elements = [];
-
     const calcColor = function(i) {
-        const colorIndex = i;
-        const b = colorIndex % 256;
-        const g = Math.floor(colorIndex / 256) % 256;
-        const r = Math.floor(colorIndex / (256 * 256));
+        const b = i % 256;
+        const g = Math.floor(i / 256) % 256;
+        const r = Math.floor(i / (256 * 256));
         return `rgb(${r}, ${g}, ${b})`;
     }
 
@@ -68,6 +70,7 @@
             }
         }
 
+        container.innerHTML = ''; // Clear the container before appending new elements
         container.appendChild(fragment);
     }
 
@@ -76,13 +79,13 @@
         const startRow = Math.floor(scrollTop / bitSize) - bufferRows;
         const endRow = startRow + totalVisibleRows;
 
-        container.innerHTML = '';
         renderRows(Math.max(startRow, 0), Math.min(endRow, totalRows - 1));
     }
 
     container.style.height = `${totalRows * bitSize}px`;
 
-    window.addEventListener('scroll', onScroll);
+    container.addEventListener('scroll', onScroll);
     renderRows(0, totalVisibleRows);
 </script>
+
 </html>
