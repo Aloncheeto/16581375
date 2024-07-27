@@ -31,50 +31,58 @@
 </body>
 
 <script>
-    let red = 0, green = 0, blue = 0;
-    const elementsPerFrame = 100;
+    const container = document.querySelector('.container');
+    const bitSize = 10;
+    const totalElements = 256 * 256 * 256;
+    const elementsPerRow = Math.floor(window.innerWidth / bitSize);
+    const totalRows = Math.ceil(totalElements / elementsPerRow);
+    const visibleRows = Math.ceil(window.innerHeight / bitSize);
+    const bufferRows = 5;
+    const totalVisibleRows = visibleRows + bufferRows * 2;
 
-    const calcColor = function() {
-        if (red < 255) {
-            if (green < 255) {
-                if (blue < 255) {
-                    blue++;
-                } else {
-                    blue = 0;
-                    green++;
-                }
-            } else {
-                green = 0;
-                red++;
-            }
-        } else {
-            return false;
-        }
-        return true;
+    let red = 0, green = 0, blue = 0;
+    let elements = [];
+
+    const calcColor = function(i) {
+        const colorIndex = i;
+        const b = colorIndex % 256;
+        const g = Math.floor(colorIndex / 256) % 256;
+        const r = Math.floor(colorIndex / (256 * 256));
+        return `rgb(${r}, ${g}, ${b})`;
     }
 
-    const drawRect = function() {
+    const renderRows = function(startRow, endRow) {
         const fragment = document.createDocumentFragment();
 
-        for (let i = 0; i < elementsPerFrame; i++) {
-            if (!calcColor()) {
-                break;
+        for (let row = startRow; row <= endRow; row++) {
+            for (let col = 0; col < elementsPerRow; col++) {
+                const index = row * elementsPerRow + col;
+                if (index >= totalElements) break;
+
+                const bit = document.createElement('div');
+                bit.classList.add('bit');
+                bit.style.backgroundColor = calcColor(index);
+                bit.style.top = `${row * bitSize}px`;
+                bit.style.left = `${col * bitSize}px`;
+                fragment.appendChild(bit);
             }
-
-            const bit = document.createElement('div');
-            bit.classList.add('bit');
-            bit.style.backgroundColor = `rgb(${red}, ${green}, ${blue})`;
-            fragment.appendChild(bit);
         }
 
-        document.body.appendChild(fragment);
-
-        if (red < 255) {
-            requestAnimationFrame(drawRect);
-        }
+        container.appendChild(fragment);
     }
 
-    requestAnimationFrame(drawRect);
-</script>
+    const onScroll = function() {
+        const scrollTop = container.scrollTop;
+        const startRow = Math.floor(scrollTop / bitSize) - bufferRows;
+        const endRow = startRow + totalVisibleRows;
 
+        container.innerHTML = '';
+        renderRows(Math.max(startRow, 0), Math.min(endRow, totalRows - 1));
+    }
+
+    container.style.height = `${totalRows * bitSize}px`;
+
+    window.addEventListener('scroll', onScroll);
+    renderRows(0, totalVisibleRows);
+</script>
 </html>
